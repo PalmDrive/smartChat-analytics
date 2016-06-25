@@ -12,29 +12,34 @@ jwtClient.authorize(function (err, tokens) {
         return;
     }
    var analytics = google.analytics('v3');
-    queryUsers(analytics);
+   queryUsers_month(analytics);
 });
 
-function queryUsers(analytics) {
+
+
+function queryUsers_month(analytics) {
    analytics.data.ga.get({
         'auth': jwtClient,
         'ids': VIEW_ID,
         'metrics': 'ga:users',
         'dimensions': 'ga:date',
-        'start-date': '7daysAgo',
+        'start-date': '28daysAgo',
         'end-date': 'yesterday',
-        'sort': 'ga:date',
+        'sort': '-ga:date',
         'max-results': 1000,        
     }, function (err, response) {
         if (err) {
             console.log(err);
             return;
         }
-        console.log(math.mean(response.rows,0)[1]);
-        console.log('The average active users for last week (' +
-            response.rows[0][0] +' to ' + response.rows[6][0] +') is ' 
-            + math.round(math.mean(response.rows,0)[1]));
-        
+        var data = [response.rows.slice(0,7),
+        response.rows.slice(7,14),response.rows.slice(14,21),response.rows.slice(21)]; 
+        console.log('The weekly average active users for last month: ');
+        data.forEach(get_mean);
+    });
+} 
 
-    });  
+function get_mean(element,index,array){
+    index = (element[0][0] +' to ' + element[6][0] + ': ').toString();
+    console.log(index + math.round(math.mean(element,0)[1]));
 }
