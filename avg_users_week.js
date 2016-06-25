@@ -30,7 +30,6 @@ function queryUsers(analytics) {
             console.log(err);
             return;
         }
-        console.log(math.mean(response.rows,0)[1]);
         console.log('The average active users for last week (' +
             response.rows[0][0] +' to ' + response.rows[6][0] +') is ' 
             + math.round(math.mean(response.rows,0)[1]));

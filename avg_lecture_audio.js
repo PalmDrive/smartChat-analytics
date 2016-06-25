@@ -62,7 +62,7 @@ function queryLectures(analytics) {
         
         console.log("The total number of lectures with action 'play_audio': "+ lectures);
         console.log("The avg number of users by lectures with action 'play_audio': " + math.round(views/lectures));
-        //console.log(vailddatabylecture);
+        //console.log(databylecture);
         
         
         
