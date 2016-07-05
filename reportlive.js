@@ -59,8 +59,6 @@ function queryLectures(analytics) {
             Obj[1] = 'attend_live:' + element.value.total.toString()+'\n';
             return Obj;
         });
-
-        console.log(attend_live);
         
 
         fs.writeFile('attend_live.txt', attend_live, function(err) {
