@@ -56,7 +56,7 @@ function queryLectures(analytics) {
         var attend_live = databylecture.map(function(element){
             var Obj = [];
             Obj[0] = element.key.toString();
-            Obj[1] = 'attend_live:' + element.values.total.toString()+'\n';
+            Obj[1] = 'attend_live:' + element.value.total.toString()+'\n';
             return Obj;
         });
 
@@ -73,6 +73,3 @@ function queryLectures(analytics) {
 } 
 
 
-function write(element, index, array){
-    writeStream.write(element.key + "\n");
-}
