@@ -1,3 +1,4 @@
+var fs = require('fs');
 var d3 = require('d3');
 var math = require('mathjs');
 var google =require('googleapis');
@@ -23,34 +24,28 @@ function queryLectures(analytics) {
         'auth': jwtClient,
         'ids': VIEW_ID,
         'metrics': 'ga:uniqueEvents',
-        'dimensions': 'ga:eventCategory,ga:eventAction,ga:date',
-        'start-date': '2016-06-20',
-        'end-date': '2016-06-26',
-        'filters': 'ga:eventAction=~attend_live'    
+        'dimensions': 'ga:eventCategory,ga:eventAction',
+        'start-date': '2016-04-01',
+        'end-date': 'yesterday',
+        'sort': '-ga:uniqueEvents',
+        'max-results': 1000, 
+        'filters': 'ga:eventAction=~^attend_live$'    
     }, function (err, response) {
         if (err) {
             console.log(err);
             return;
         }
-        
-        var live = response.rows.map(function(element){
+        var data = response.rows.map(function(element){
             var Obj = {};
             element[0] = element[0].replace(/,group_id/,", group_id:");
             Obj["eventCategory"] = element[0];
             Obj["eventAction"] = element[1];
-            Obj["date"] = element[2];
-            Obj["uniqueEvents"] = element[3];
+            Obj["count"] = element[2];
             return Obj;
         });
+        
 
-        var livebydate = d3.nest()
-        .key(function(d) {return d.date;})
-        .entries(live);
-
-        console.log(livebydate);
-    
-
-        /*var databylecture = d3.nest()
+        var databylecture = d3.nest()
         .key(function(d) { return d.eventCategory; })
         .rollup(function(v) { return {
             system: v.length,
@@ -58,21 +53,26 @@ function queryLectures(analytics) {
             }; })
         .entries(data);
 
-        var vailddatabylecture = databylecture.filter(function(d) { return d.values.total > 3; });
-
-        var lectures = vailddatabylecture.length;
-        var views = d3.sum(vailddatabylecture, function(d) {
-            return d.values.total;
+        var attend_live = databylecture.map(function(element){
+            var Obj = [];
+            Obj[0] = element.key.toString();
+            Obj[1] = 'attend_live:' + element.values.total.toString()+'\n';
+            return Obj;
         });
 
+        console.log(attend_live);
         
-        console.log("The total number of lectures with action 'attend_live': "+ lectures);
-        console.log("The avg number of users by lectures with action 'attend_live': " + math.round(views/lectures));
-        //console.log(vailddatabylecture);
-        
-        */
-        
-        
+
+        fs.writeFile('attend_live.txt', attend_live, function(err) {
+            if (err) {
+            return console.error(err);
+            }
+            console.log("数据写入成功！");
+        });
     });
 } 
 
+
+function write(element, index, array){
+    writeStream.write(element.key + "\n");
+}

@@ -1,3 +1,4 @@
+var d3 = require('d3');
 var math = require('mathjs');
 var google =require('googleapis');
 var key = require('./config/ga_keys.json');
@@ -20,9 +21,9 @@ function queryUsers(analytics) {
    analytics.data.ga.get({
         'auth': jwtClient,
         'ids': VIEW_ID,
-        'metrics': 'ga:users',
+        'metrics': 'ga:users, ga:sessionDuration',
         'dimensions': 'ga:date',
-        'start-date': '20160607',
+        'start-date': '2016-06-07',
         'end-date': 'yesterday',
         'sort': 'ga:date',
         'max-results': 1000,        
@@ -31,10 +32,13 @@ function queryUsers(analytics) {
             console.log(err);
             return;
         }
-        console.log('The average active users for last week (' +
-            response.rows[0][0] +' to ' + response.rows[6][0] +') is ' 
-            + math.round(math.mean(response.rows,0)[1]));
-        console.log(response);
+        
+
+        var avgduration = response.rows.map(function(d) {return d[2]/d[1]; });
+        console.log("The average users' duration is " + math.mean(avgduration));
+
+
+        
         
 
     });  

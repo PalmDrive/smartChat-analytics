@@ -22,7 +22,7 @@ function queryTime(analytics) {
    analytics.data.ga.get({
         'auth': jwtClient,
         'ids': VIEW_ID,
-        'metrics': 'ga:uniqueEvents,ga:eventValue',
+        'metrics': 'ga:uniqueEvents,ga:eventValue,ga:users',
         'dimensions': 'ga:date,ga:eventCategory,ga:eventAction',
         'start-date': '8daysAgo',
         'end-date': 'yesterday',
@@ -34,14 +34,18 @@ function queryTime(analytics) {
             return;
         }
         
+        
         var data = response.rows.map(function(element){
             var Obj = {};
             Obj['date'] = element[0];
             Obj["eventCategory"] = element[1];
             Obj["eventAction"] = element[2];
-            Obj["Timeperuser"] = element[4]/element[3];
+            Obj["users_event"] = element[3];
+            Obj["totaltime"] = element[4];
+            Obj["activeusers"] = element[5];
             return Obj;
         });
+        console.log(data);
         
         var databydate = d3.nest()
         .key(function(d) { return d.date; })
@@ -51,8 +55,8 @@ function queryTime(analytics) {
             var object = {};
             object['date'] = element.key;
             object['AvgTime'] = d3.mean(element.values, function(d) {return d.Timeperuser;});
-            console.log(element.key);
-            console.log(object['AvgTime']);
+            //console.log(element.key);
+            //console.log(object['AvgTime']);
             return object;
         })
 
