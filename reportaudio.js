@@ -52,7 +52,22 @@ function queryLectures(analytics) {
                     return value[0].indexOf(id)> -1;
                 });
 
-                console.log(audio[2]);
+                var audiomod = audio.map(function(element){
+                    element[0] = element[0].replace(/,group_id/,", group_id:");
+                    var Obj = {};
+                    Obj["eventCategory"] = element[0];
+                    Obj["count"] = element[2];
+                    return Obj;
+                });
+
+                var audiobylecture = d3.nest()
+                .key(function(d) { return d.eventCategory; })
+                .rollup(function(v) { return {
+                total: d3.sum(v,function(d) {return d.count;})
+                }; })
+                .entries(audiomod);
+
+                console.log(audiobylecture);
                 process.exit();
             });
        
