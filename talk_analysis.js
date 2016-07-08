@@ -30,6 +30,7 @@ function queryLectures(analytics) {
             	if (today.getTime() < d.getTime()) {
                 	console.log("NO ENOUGH DAYS");
                 	process.exit();
+                    return;
             	}
 
             	analytics.data.ga.get({ // #users who attended live
@@ -38,13 +39,14 @@ function queryLectures(analytics) {
                     'metrics': 'ga:uniqueEvents',
                     'dimensions': 'ga:eventCategory,ga:eventAction',
                     'start-date': livedate,
-                    'end-date': 'yesterday',
+                    'end-date': enddate,
                     'sort': '-ga:uniqueEvents',
                     'max-results': 1000, 
                     'filters': 'ga:eventAction=~^attend_live$'    
                 }, function (err, response) {
                     if (err) {
                         console.log("No Attend_live");
+                        process.exit();
                         return;
                     }
 
@@ -82,8 +84,9 @@ function queryLectures(analytics) {
                 		'filters': 'ga:eventAction=~^play_audio$'   
             		}, function (err, response) {
                 		if (err) {
-                		console.log("No Play_Audio");
-                		return;
+                            console.log("No Play_Audio");
+                            process.exit();
+                            return;
                 		}
 
                 		var audio = response.rows.filter(function(value){
@@ -121,8 +124,9 @@ function queryLectures(analytics) {
                         	'filters': 'ga:eventAction=~^send_listen_duration:live_talk$'    
                     	}, function (err, response) {
                         	if (err) {
-                            	console.log(err);
-                            	return;
+                            	console.log("No live duration data");
+                                process.exit();
+                                return;
                         	}
 
                         	var livetime = response.rows.filter(function(value){
@@ -148,8 +152,9 @@ function queryLectures(analytics) {
                         		'filters': 'ga:eventAction=~^send_listen_duration:record_talk$'    
                     		}, function (err, response) {
                         		if (err) {
-                            		console.log(err);
-                            		return;
+                            		console.log("No record duration data");
+                                    process.exit();
+                                    return;
                         		}
 
                         		var recordtime = response.rows.filter(function(value){
