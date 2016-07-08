@@ -69,3 +69,8 @@ function queryLectures(analytics) {
         });
     });
 } 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 6d8e9823e29cb83c0d695db31a4ddd6761d5588d
