@@ -2,7 +2,7 @@ var d3 = require('d3');
 var math = require('mathjs');
 var google =require('googleapis');
 var key = require('./config/ga_keys.json');
-var VIEW_ID = require('./config/ga_view_id.json')['viewId_dev'];
+var VIEW_ID = require('./config/ga_view_id.json')['viewId'];
 var jwtClient = new google.auth.JWT(
     key.client_email, null, key.private_key,
     ['https://www.googleapis.com/auth/analytics.readonly'], null);
