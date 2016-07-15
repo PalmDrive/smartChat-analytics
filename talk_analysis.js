@@ -21,10 +21,8 @@ function queryLectures(analytics) {
         ask("Please input the lecture id: ", /.+/, function(id) {
         	ask("Please input the date range: ", /.+/, function(range){
         		var d = new Date(livedate); //live date
-        		console.log(d);
             	d.setDate(d.getDate() + Number(range)); //end date
             	var enddate = d.toJSON().substring(0,10);
-            	console.log(enddate);
 
             	var today = new Date(); //validate
             	if (today.getTime() < d.getTime()) {
@@ -51,26 +49,16 @@ function queryLectures(analytics) {
                     }
 
                     var live = response.rows.filter(function(value){
-                        return value[0].indexOf(id)> -1;
+                        return value[0].indexOf(id)> -1 && value[0].indexOf("测试") == -1;
                     });
+
                     
                     var attendmod = live.map(function(element){
-                        var Obj = {};
-                        element[0] = element[0].replace(/,group_id/,", group_id:");
-                        Obj["eventCategory"] = element[0];
-                        Obj["count"] = element[2];
-                        return Obj;
+                        return element[2];
                     });
-                    var livebylecture = d3.nest()
-                    .key(function(d) { return d.eventCategory; })
-                    .rollup(function(v) { return {
-                        total: d3.sum(v,function(d) {return d.count;})
-                    }; })
-                    .entries(attendmod);
 
                     // output
-                    console.log("参与直播人数： ");
-                    console.log(livebylecture);
+                    console.log("参与直播人数： " + math.sum(attendmod));
 
                     analytics.data.ga.get({
                 		'auth': jwtClient,
@@ -90,33 +78,28 @@ function queryLectures(analytics) {
                 		}
 
                 		var audio = response.rows.filter(function(value){
-                    		return value[0].indexOf(id)> -1;
+                    		return value[0].indexOf(id)> -1 && value[0].indexOf("测试") == -1;
                 		});
 
                 		var audiomod = audio.map(function(element){
-                    		element[0] = element[0].replace(/,group_id/,", group_id:");
-                    		var Obj = {};
-                    		Obj["eventCategory"] = element[0];
-                    		Obj["count"] = element[2];
-                    		return Obj;
+                    		return element[2];
                 		});
 
-                		var audiobylecture = d3.nest()
-                		.key(function(d) { return d.eventCategory; })
-                		.rollup(function(v) { return {
-                		total: d3.sum(v,function(d) {return d.count;})
-                		}; })
-                		.entries(audiomod);
 
-                		console.log("这段时间内收听录播人数：");
-                		console.log(audiobylecture);
+                		console.log("这段时间内收听录播人数：" + math.sum(audiomod));
 
+                        var timedate = new Date("2016-07-05");
+
+                        if (d.getTime()  <= timedate.getTime()){
+                            process.exit();
+                            return;
+                        }
 
                 		analytics.data.ga.get({
                         	'auth': jwtClient,
                         	'ids': VIEW_ID,
                         	'metrics': 'ga:uniqueEvents,ga:eventValue',
-                        	'dimensions': 'ga:eventCategory,ga:eventAction',
+                        	'dimensions': 'ga:eventCategory,ga:eventAction,ga:operatingSystem,ga:appVersion',
                         	'start-date': livedate,
                         	'end-date': enddate,
                         	'sort': '-ga:uniqueEvents',
@@ -130,21 +113,36 @@ function queryLectures(analytics) {
                         	}
 
                         	var livetime = response.rows.filter(function(value){
-                            return value[0].indexOf(id)> -1;
+                            return value[0].indexOf(id)> -1 && value[0].indexOf("测试") == -1;
                         	});
 
-                            var avglivetime = livetime[0][3]/livetime[0][2];
+                            var live = livetime.map(function(element){
+                                var Obj = [];
+                                Obj[0] = element[0];
+                                Obj[1] = Number(element[4]);
+                                if (element[2] == "Android" && (element[3] == '2.4.1'|| element[3] =='2.4.0')) {
+                                    Obj[2] = element[5]/1000;
+                                } else {
+                                    Obj[2] = Number(element[5]);
+                                }
+                                return Obj;
+                            });
 
-                            var minutes = Math.floor(avglivetime  / 60);
-                            var seconds = Math.round(avglivetime  - minutes * 60);
+                            var livetime = live.map(function(element){
+                                return element[2];
+                            });
 
-                            console.log("收听直播平均时间: " + minutes + " : "+ seconds);
+                            var liveuser = live.map(function(element){
+                                return element[1];
+                            });
+
+                            console.log("收听直播平均时间: " + transtime(math.sum(livetime)/math.sum(liveuser)));
 
                         	analytics.data.ga.get({
                         		'auth': jwtClient,
                         		'ids': VIEW_ID,
                         		'metrics': 'ga:uniqueEvents,ga:eventValue',
-                        		'dimensions': 'ga:eventCategory,ga:eventAction',
+                        		'dimensions': 'ga:eventCategory,ga:eventAction,ga:operatingSystem,ga:appVersion',
                         		'start-date': livedate,
                         		'end-date': enddate,
                         		'sort': '-ga:uniqueEvents',
@@ -158,16 +156,33 @@ function queryLectures(analytics) {
                         		}
 
                         		var recordtime = response.rows.filter(function(value){
-                            	return value[0].indexOf(id)> -1;
+                            	return value[0].indexOf(id)> -1 && value[0].indexOf("测试") == -1;
                         		});
 
+                                var record = recordtime.map(function(element){
+                                    var Obj = [];
+                                    Obj[0] = element[0];
+                                    Obj[1] = Number(element[4]);
+                                    if (element[2] == "Android" && (element[3] == '2.4.1'|| element[3] =='2.4.0')) {
+                                        Obj[2] = element[5]/1000;
+                                    } else {
+                                        Obj[2] = Number(element[5]);
+                                    }
+                                    return Obj;
+                                });
 
-                                var avgrecordtime = recordtime[0][3]/recordtime[0][2];
+                                var recordtime = record.map(function(element){
+                                    return element[2];
+                                });
 
-                                var minutes = Math.floor(avgrecordtime  / 60);
-                                var seconds = Math.round(avgrecordtime  - minutes * 60);
+                                var recorduser = record.map(function(element){
+                                    return element[1];
+                                });
 
-                                console.log("收听录播平均时间: " + minutes + " : "+ seconds);
+                                console.log("收听录播平均时间: " + transtime(math.sum(recordtime)/math.sum(recorduser)));
+
+
+
 
 
             
@@ -198,4 +213,13 @@ function ask(question, format, callback) {
      ask(question, format, callback);
    }
  });
+}
+
+function transtime(time) {
+    var minutes = Math.floor(time/ 60);
+    var seconds = Math.round(time  - minutes * 60);
+    if (seconds < 10) {
+        seconds = "0" + seconds;
+    }
+    return minutes + ":"+ seconds;
 }
