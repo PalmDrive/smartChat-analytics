@@ -1,0 +1,39 @@
+var d3 = require('d3');
+var math = require('mathjs');
+var google =require('googleapis');
+var key = require('./config/ga_keys.json');
+var VIEW_ID = require('./config/ga_view_id.json')['viewId'];
+var jwtClient = new google.auth.JWT(
+    key.client_email, null, key.private_key,
+    ['https://www.googleapis.com/auth/analytics.readonly'], null);
+
+
+jwtClient.authorize(function (err, tokens) {
+    if (err) {
+        console.log(err);
+        return;
+    }
+   	var analytics = google.analytics('v3');
+    queryusers(analytics);
+});
+
+
+function queryusers(analytics) {
+    analytics.data.ga.get({
+        'auth': jwtClient,
+        'ids': VIEW_ID,
+        'metrics': 'ga:users,ga:newUsers',
+        'dimensions': 'ga:userType',
+        'start-date': '2016-07-05',
+        'end-date': '2016-07-10',
+        
+        'max-results': 1000,        
+        }, function (err, response) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log(Number(response.rows[1][1])/(Number(response.rows[1][1])+Number(response.rows[0][1])));
+    });
+}
+

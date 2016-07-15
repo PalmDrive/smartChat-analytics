@@ -36,6 +36,7 @@ function ask(question, format, callback) {
  });
 }
 
+var result = [];
 
 function queryusers(analytics) {
     ask("Please input the start date: ", /[0-9]{4}-[0-9]{2}-[0-9]{2}|today|yesterday|[0-9]+(daysAgo)/, function(startdate) {
@@ -56,13 +57,14 @@ function queryusers(analytics) {
                 }
                 // 平均日活  
                 var users = response.rows.map(function(d) {return d[1];});
-                console.log('平均日活: ' + Math.round(math.mean(users)));
+
+                result[0] = '平均日活: ' + Math.round(math.mean(users));
 
                 var avgduration = math.mean(response.rows.map(function(d) {return d[2]/d[1];}));
                 var minutes = Math.floor(avgduration / 60);
                 var seconds = Math.round(avgduration - minutes * 60);
 
-                console.log("活跃用户平均每日活跃时间: " + minutes + " : "+ seconds);
+                result[2] =  "活跃用户平均每日活跃时间: " + minutes + ":"+ seconds;
 
                 analytics.data.ga.get({
                     'auth': jwtClient,
@@ -76,8 +78,8 @@ function queryusers(analytics) {
                         return;
                     }
                     
-                    console.log("周活: " + response.rows[0][1]);
-                    console.log("访问数: " + response.rows[0][0]);
+                    result[1] = "周活: " + response.rows[0][1];
+                    result[10] = "访问数: " + response.rows[0][0];
 
                     analytics.data.ga.get({
                         'auth': jwtClient,
@@ -119,7 +121,7 @@ function queryusers(analytics) {
                 			return element.value.users;
                 		});
 
-                		console.log("平均每日听live的人数: " + Math.round(math.mean(liveuser)));
+                		result[5] = "平均每日听live的人数: " + Math.round(math.mean(liveuser));
                 	
                 		var livetimebyday = d3.nest()
                 		.key(function(d) { return d.date; })
@@ -140,8 +142,8 @@ function queryusers(analytics) {
                 			livetimeperliveuser[i] = livetime[i]/liveuser[i];
                 		} 
 
-                		console.log("活跃用户平均每日听live的时间: "+ transtime(Math.round(math.mean(livetimeperuser))));
-                		console.log("听了live的用户平均每日听live的时间: " +transtime(Math.round(math.mean(livetimeperliveuser))));
+                		result[3] = "活跃用户平均每日听live的时间: "+ transtime(Math.round(math.mean(livetimeperuser)));
+                		result[7] = "听了live的用户平均每日听live的时间: " +transtime(Math.round(math.mean(livetimeperliveuser)));
 
 
 
@@ -185,7 +187,7 @@ function queryusers(analytics) {
                 			return element.value.users;
                 			});
 
-                			console.log("平均每日听record的人数: " + Math.round(math.mean(recorduser)));
+                			result[6] = "平均每日听record的人数: " + Math.round(math.mean(recorduser));
                 	
                 			var recordtimebyday = d3.nest()
                 			.key(function(d) { return d.date; })
@@ -206,9 +208,31 @@ function queryusers(analytics) {
                 				recordtimeperrecorduser[i] = recordtime[i]/recorduser[i];
                 			} 
 
-                			console.log("活跃用户平均每日听record的时间: "+ transtime(Math.round(math.mean(recordtimeperuser))));
-                			console.log("听了record的用户平均每日听record的时间: " +transtime(Math.round(math.mean(recordtimeperrecorduser))));
-                			process.exit();
+                			result[4] = "活跃用户平均每日听record的时间: "+ transtime(Math.round(math.mean(recordtimeperuser)));
+                			result[8] = "听了record的用户平均每日听record的时间: " +transtime(Math.round(math.mean(recordtimeperrecorduser)));
+
+
+                			
+
+                			analytics.data.ga.get({
+        						'auth': jwtClient,
+        						'ids': VIEW_ID,
+        						'metrics': 'ga:users,ga:newUsers',
+        						'dimensions': 'ga:userType',
+        						'start-date': startdate,
+        						'end-date': enddate,
+        
+        						'max-results': 1000,        
+        					}, function (err, response) {
+            					if (err) {
+                					console.log(err);
+                					return;
+            					}
+            					result[9] = "回放者比例: " + Math.round(Number(response.rows[1][1])/(Number(response.rows[1][1])+Number(response.rows[0][1]))*1000)/10;
+ 								console.log(result);
+
+ 								process.exit();
+ 							});
                 		});
                     });          
                 });
@@ -221,7 +245,7 @@ function queryusers(analytics) {
 function transtime(time) {
 	var minutes = Math.floor(time/ 60);
 	var seconds = Math.round(time  - minutes * 60);
-	return minutes + " : "+ seconds;
+	return minutes + ":"+ seconds;
 }
 
         
