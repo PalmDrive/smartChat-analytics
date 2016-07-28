@@ -46,17 +46,17 @@ function queryLectures(analytics) {
         var livebydate = d3.nest()
         .key(function(d) {return d.date;})
         .entries(live);
-
-        console.log(livebydate);
     
 
-        /*var databylecture = d3.nest()
+        var databylecture = d3.nest()
         .key(function(d) { return d.eventCategory; })
         .rollup(function(v) { return {
             system: v.length,
             total: d3.sum(v,function(d) {return d.count;})
             }; })
-        .entries(data);
+        .entries(livebydate);
+
+        console.log(databylecture);
 
         var vailddatabylecture = databylecture.filter(function(d) { return d.values.total > 3; });
 
@@ -68,9 +68,8 @@ function queryLectures(analytics) {
         
         console.log("The total number of lectures with action 'attend_live': "+ lectures);
         console.log("The avg number of users by lectures with action 'attend_live': " + math.round(views/lectures));
-        //console.log(vailddatabylecture);
         
-        */
+        
         
         
     });

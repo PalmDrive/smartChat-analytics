@@ -229,9 +229,32 @@ function queryusers(analytics) {
                 					return;
             					}
             					result[9] = "回放者比例: " + Math.round(Number(response.rows[1][1])/(Number(response.rows[1][1])+Number(response.rows[0][1]))*1000)/10;
- 								console.log(result);
 
- 								process.exit();
+
+
+                                var d = new Date(enddate);
+                                d.setDate(d.getDate() - 30); 
+                                var monthdate = d.toJSON().substring(0,10);
+
+                                analytics.data.ga.get({
+                                    'auth': jwtClient,
+                                    'ids': VIEW_ID,
+                                    'metrics': 'ga:users',
+                                    'start-date': monthdate,
+                                    'end-date': enddate,
+        
+                                    'max-results': 1000,        
+                                }, function (err, response) {
+                                    if (err) {
+                                     console.log(err);
+                                     return;
+                                    }
+                                    var monthusers = response.rows[0][0];
+                                    result[11] = "日活/月活: " + Math.round(1000*math.mean(users)/monthusers)/1000;
+
+                                    console.log(result);
+ 								    process.exit();
+                                });
  							});
                 		});
                     });          
